@@ -15,8 +15,11 @@
 \usepackage{pgfgantt}
 \usepackage{float}
 \usepackage{enumitem}
+\usepackage{url}
 \newlist{researchquestions}{enumerate}{1}
 \setlist[researchquestions,1]{label=\textbf{\textit{RQ \arabic*}}, resume}
+\newlist{goals}{enumerate}{1}
+\setlist[goals,1]{label=\textbf{\textit{Goal \arabic*}}, resume}
 
 
 \geometry{%
@@ -45,7 +48,7 @@
 	\hrule
 	\vskip1ex
 	\begin{tabular}{ll}
-		\thenamelabel: & \thevorname{} \textbf{\thenachname}\\
+		\thenamelabel: & Parshant Singh, Shouvik Ghosh\\
 		\theadvisorlabel: & \hspace*{-.5ex}\thebetreuer\\
 		\thesupervisorlabel: & \chairhead\\
 		\thebeginlabel: & \thebeginnmonat/\thebeginnjahr\\
@@ -64,86 +67,38 @@
 
 \subsection*{Topic}
 
-\todo{Add Motivation: Why is this topic relevant? Which ``big'' problem does it solve?}
-This Bachelor's Thesis shall implement a wide band scanning application
-resembling a spectrum analyzer using software defined radio hardware.
-It shall be possible to both sweep the whole spectrum supported by the hardware
-in use as well as tuning into specific parts of that spectrum.
-In addition it shall be possible to record a narrow band of the spectrum for
-both offline-analyses and replay at a later time.
-The intended field of application is, for instance, the generation of
-reproducible error signals in a testbed or empirically measuring the gain
-of different antennas.
+% \todo{Add Motivation: Why is this topic relevant? Which ``big'' problem does it solve?}
+ With the growing adoption of blockchain technology, the number of readily-available solutions has multiplied dramatically. Approximately five thousand distinct cryptocurrencies have been reported on a single website \cite{1}. Each of these implementations aims at offering improvements through distinctive features, focused on the performance and application to various use cases. The authors of different blockchain protocols claim impressive performance. These results are usually obtained in isolation and are often non-reproducible, which makes them hard to compare and verify. Existing blockchain benchmark frameworks are either specifically focused on testing a single protocol or do not support or provide workloads that reflect the real-world usage of the blockchain system. Diablo (DIstributed Analytical Blockchain benchmark framework) is a prototype benchmark framework for blockchain protocols initially developed by Chris Natoli in 2021 \cite{2}. As of Oct 2022, as part of previous work \cite{3}, 6 blockchain protocols (Algorand, Avalanche, Diem, Quorum, Ethereum, Solana) have already been evaluated using the Diablo framework. In previous work at the Chair \cite{3}, the Diablo framework was used to evaluate all of the previous protocols, without their profiling. In this work, we aim to extend the functionality of the Diablo framework by two additional popular blockchain protocols - Near \cite{4} and Dfinity \cite{5} and continue with a detailed analysis of two of the currently supported protocols.  
 
-\subsection*{Related Work}
+\subsection*{Goals}
 
-\todo{Explain here how this project compares to existing publications}
-
-The thesis is thematically similar to the Master's Thesis \emph{Automatic Line
-Code Detection of RF Signals on Software Defined Radios}, which also implemented a spectrum analyzer.
-However, it was never planned to record or replay signals.
-In addition, this thesis lacks some scientific rigor with respect to the
-validity of recorded samples.
-
-
-\subsection*{Research Questions}
-
-\todo{Optional section: Maybe you can formulate research questions which you try to answer in this thesis}
-
-\begin{researchquestions}
-\item Do USB interfaces interfere with SDR?
-\end{researchquestions}
+\begin{goals} [leftmargin=.5in]
+\item Singh, Parshant - Extend the Diablo Framework by Near.\\
+Ghosh, Shouvik - Extend the Diablo Framework by Dfinity.
+\item Detailed experiments to identify possible bottlenecks and look for optimization techniques for blockchains Algorand \cite{6} and possibly Solana \cite{7} or Avalanche \cite{8}.\\
+Singh, Parshant - Algorand \\ 
+Ghosh, Shouvik - Solana or Avalanche
+\end{goals}
 
 \subsection*{Approach}
-In the first part we will make measurements and statistic evaluations to
-ensure, that the acquired data, which comes from the SDR, is valid.  Therefore
-we will test, if the samples are valid right after the internal tuning phase of
-the SDR.
-We will also investigate whether or not external influences such as the USB
-interface interfere with the process.
-Other influence such as the quantization error will also be analyzed.
-The latter are of particular interest when it comes to replay of previously
-recorded signals.
-The second part is about the scanning application itself.
-The program can use the wide range of the present USRP hardware, which covers a
-frequency range from 75\,MHz to 6\,GHz.
-The tool would scan the whole band for online investigation or store the
-samples for later use.
-Further more, you will be able to rescan narrow bands of the spectrum to have a
-closer look whats happening there.
-The UI will consist of a zoomable heatmap (waterfall diagram) interface with
-mouse support.
+\subsubsection*{Goal 1 (Applies to both Parshant Singh and Shouvik Ghosh) }
+We will need to get familiar with the Diablo framework \cite{9} and the individual protocols. In the beginning, we will focus on understanding how the Diablo framework is deployed and can be used for benchmarking framework. After that, we will be deploying the blockchain validator nodes (NEAR and Dfinity) in our testbed. Once that is complete we will be using the diablo framework to create transactions and benchmark the blockchain network. At the end, we will conduct experiments verifying the implementation works and assess various parameters such as a number of nodes, stake distribution, and transaction latency/finality. As outlined previously, each team member will focus on the individual Blockchain protocols.
 
-To get proper values to display, we have to consider different parameters like
-integration time and gain settings etc.
-These parameters will also be part of the research.
-The software will be based on the GNUradio software defined radio
-framework.  The additional work is planed to be done with python3.
-The used hardware consists of 2 URSP b210, where for the main part only one is
-needed.
+\subsubsection*{Goal 2 (Applies to both Parshant Singh and Shouvik Ghosh)}
+The second goal focuses on the performance evaluation of blockchain protocols called Algorand and Solana or Avalanche using Diablo for transaction generation and chair testbed for detailed analysis. The framework and the performance evaluation would require some updates/extensions and a more detailed evaluation of the protocols. Our task will be to get familiar with the Algorand, Solana or Avalanche protocols, Diablo framework, the chair testbed, and using the knowledge from Goal 1 about Diablo framework and chair testbed, assess and identify certain performance bottlenecks and possibly their improvements, e.g, on the network layer (optimize gossip) or processing layer (cryptographic operation). Work distribution will be as defined in the goals section.
 
-\subsection*{Skills}
-\todo{Optional section: include only if you
-have worked on projects that are relevant for this thesis.}
+\subsection*{Justification of the lecture (Data Networking - EI70330)}
+A strong background in networking is essential to understand the underlying concepts in Blockchain. We need to have a thorough understanding of ISO/OSI models and relevant internet metrics to assess Blockchain performance correctly. This course dives deeper into the communication networks and their building blocks which is certainly relevant to our main area of focus in this IDP. We will gain a good understanding of the principles of resource management for wireless and wireline packet-based communication and apply these for resource management, and traffic engineering of network protocols and architectures. This understanding will be helpful while setting up communication between different machines on the testbed for the blockchain nodes' and the Diablo Framework interaction.
 
-I did some previous work with SDR hardware, the RTL-SDR and the
-hackrf.
-For this work the packet generator MoonGen was used~\cite{DBLP:conf/imc/EmmerichGRWC15}.
-I am quite familiar with the software (GNUradio) and
-hardware environment.
 
-\subsection*{Additional Hardware Requirements}
-\todo{Optional section: include only if you
-    need new hardware for this thesis.}
-
-\subsection*{Planned Schedule}
+\subsection*{Planned Schedule (Applies to both Parshant Singh and Shouvik Ghosh)}
 \begin{figure}[H]
   \centering
   \begin{ganttchart}[
-      x unit=1.25mm,
+      x unit=0.81mm,
       y unit title=0.6cm,
       title height=1,
-      title label font=\small,
+      title label font=\scriptsize,
       bar label font=\scriptsize,
       milestone label font=\scriptsize,
       milestone inline label node/.append style={left=2mm},
@@ -153,15 +108,16 @@ hardware environment.
       time slot unit=day,
       inline,
       bar height=0.7,
-    ]{2016-04-15}{2016-08-25}
+    ]{2022-11-01}{2023-05-15}
     \gantttitlecalendar{month=name}\\
-    \ganttbar{Reading}{2016-04-15}{2016-04-28}\\
-    \ganttbar{Setup testbed}{2016-04-15}{2016-05-05}\\
-    \ganttbar{Work on first prototype}{2016-05-01}{2016-05-30}\\
-    \ganttbar{Perform measurements}{2016-05-20}{2016-07-15}\\
-    \ganttmilestone{Intermediate talk}{2016-06-15}\\
-    \ganttbar{Write thesis}{2016-06-30}{2016-08-15}\\
-    \ganttmilestone{Submission}{2016-08-14}
+    \ganttbar{Topic Familiarization}{2022-11-01}{2022-11-30}\\
+    \ganttbar{Literature Research}{2022-11-22}{2022-12-31}\\
+    \ganttbar{Diablo Framework familiarity}{2022-12-31}{2023-02-28}\\
+    \ganttbar{Profiling of a blockchain protocol}{2023-02-01}{2023-03-31}\\
+    \ganttbar{Identify possible improvements}{2023-03-01}{2023-04-30}\\
+    \ganttbar{Writing of a report}{2023-01-01}{2023-05-15}\\
+    % \ganttmilestone{Intermediate talk}{2016-06-15}\\
+    % \ganttmilestone{Submission}{2016-08-14}
   \end{ganttchart}
   \label{fig:work-plan}
 \end{figure}
