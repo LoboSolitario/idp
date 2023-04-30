@@ -40,7 +40,7 @@ Ethereum recently moved from Proof-of-Work to a Proof-of-Stake consensus algorit
 
 Ethereum shards a single blockchain into several generally independent “shard chains”, whereas NEAR shards within each block and maintains a single blockchain. Since Ethereum’s Beacon chain needs to confirm the cross-shard transactions, it has a more significant block finality time of ~17 seconds compared to Near’s ~1 second.
 
-![Screenshot 2023-03-29 at 7.14.13 AM.png](Near%20d056532a2afa4c52a9917721412c1040/Screenshot_2023-03-29_at_7.14.13_AM.png)
+![Screenshot 2023-03-29 at 7.14.13 AM.png](../Screenshot_2023-03-29_at_7.14.13_AM.png)
 
 # Observations during Local Deployment
 
@@ -75,7 +75,7 @@ Ethereum shards a single blockchain into several generally independent “shard 
         > Under State Sharding the nodes in each shard are building their own blockchain that contains transactions that affect only the local part of the global state that is assigned to that shard. Therefore, the validators in the shard only need to store their local part of the global state and only execute, and as such only relay, transactions that affect their part of the state. This partition linearly reduces the requirement on all compute power, storage, and network bandwidth, but introduces new problems, such as data availability and cross-shard transactions. Transactions may be completely ignored or partially applied due to forks.
         > 
         
-        ![Screenshot 2023-04-26 at 7.11.21 PM.png](Near%20d056532a2afa4c52a9917721412c1040/Screenshot_2023-04-26_at_7.11.21_PM.png)
+        ![Screenshot 2023-04-26 at 7.11.21 PM.png](../Screenshot_2023-04-26_at_7.11.21_PM.png)
         
 - Some malicious activities that can be employed by adversaries are
     - Malicious forks (Can be solved by adding a cross-link in the beacon chain of the latest shard chunk)
@@ -84,7 +84,7 @@ Ethereum shards a single blockchain into several generally independent “shard 
     - Arrange shards into an undirected graph in which each shard is connected to several other shards, and only allow cross-shard transactions between neighboring shards. In this design a validator in each shard is expected to validate both all the blocks in their shard as well as all the blocks in all the neighboring shards.
         - **Issue** - Problem with this is if two adjoining shards are malicious, it still leads to adversary able to execute invalid transaction.
             
-            ![Screenshot 2023-04-27 at 12.51.03 AM.png](Near%20d056532a2afa4c52a9917721412c1040/Screenshot_2023-04-27_at_12.51.03_AM.png)
+            ![Screenshot 2023-04-27 at 12.51.03 AM.png](../Screenshot_2023-04-27_at_12.51.03_AM.png)
             
     - **Fisherman:** The idea behind the first approach is the following: whenever a block header is communicated between chains for any purpose (such as cross-linking to the beacon chain, or a cross-shard transaction), there’s a period of time during which any honest validator can provide a proof that the block is invalid.
         - **Issue:** Introducing such a period would significantly slow down the cross-shard transactions and make them vulnerable to spamming of challenges.
