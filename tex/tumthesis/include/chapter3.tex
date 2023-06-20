@@ -1,0 +1,30 @@
+\chapter{Investigations for local deployment}
+\label{chap:chapterthree}
+
+In order to deploy it locally, the first method that was tested was using the DFINITY SDK called \texttt{dfx}. The idea was to investigate the possibility of checking whether it was possible to deploy the replicas using \texttt{dfx} on multiple nodes and try to set up communication between them.
+
+Hence, we started the local replica using \texttt{dfx} and then tried to set up the ledger canister on the local replica in order to interact with the blockchain.
+
+Another essential thing to note about Internet Computer is that it doesn't ship with RPC endpoints for the blockchain. Hence once we deploy the local ledger, to create transactions or perform any kind of operations on the blockchain, you have to deploy Rosetta API on top of the replica set to interact with the blockchain in RPC-like format.
+
+\section{Local deployment with \texttt{dfx}}
+
+\section{Ledger canister}
+
+The Internet Computer Protocol (ICP) implements management of its utility token (ticker "ICP") using a specialized canister, called the ledger canister. There is a single ledger canister which runs alongside other canisters on a special subnet of the Internet Computer - the NNS subnet. The ledger canister is a smart contract that holds accounts and transactions. These transactions either mint ICP tokens for accounts, transfer ICP tokens from one account to another, or burn ICP tokens, eliminating them from existence, e.g. while converting ICP tokens to cycles. The ledger canister maintains a traceable history of all transactions starting from its genesis state (initial state).
+
+\textbf{Local ledger setup:} You can follow the steps shown \href{https://internetcomputer.org/docs/current/developer-docs/integrations/ledger/ledger-local-setup}{here}.
+
+In order to further understand how their ledger works, I run some of their test examples. One of the most important ones is the \href{https://github.com/dfinity/examples/tree/master/motoko/ledger-transfer}{ledger-transfer example}. It helps you create transactions, transfer ICP, etc. The source code is added to \texttt{code/} folder. Once you run this example, you can run the Rosetta client on top of this, which will provide you with RPC-like endpoints.
+
+To run the \texttt{ledger-canister example}, the easiest way is to ignore the steps in the readme provided in the repository and just follow the step-by-step procedure in the \texttt{code/ledger-transfer/demo.sh} bash script file. Once you have successfully deployed this, you can deploy the Rosetta API to get the API endpoints to interact with the ledger.
+
+\section{Rosetta}
+
+Rosetta is an open standard introduced by Coinbase to simplify the integration of blockchain-based tokens in exchanges, block explorers, and wallets. You can set up a Rosetta API-compliant node to interact with the Internet Computer and exchange Internet Computer Protocol (ICP) tokens.
+
+In order to deploy your own Rosetta client on top of the local ledger, you can follow the steps \href{https://internetcomputer.org/docs/current/developer-docs/integrations/rosetta/}{here}.
+
+\section{Limitations}
+
+Using this process, we were able to successfully deploy the replica node on one of our testbed machines. However, when we moved to the next step, where we had to deploy it in multiple nodes and connect, we found that there was no functionality of this available in \texttt{dfx}. It deploys only a single replica set, and there is no possible way to connect it with other local deployments. Hence we reached a dead end for this stage.
