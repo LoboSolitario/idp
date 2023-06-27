@@ -1,200 +1,30 @@
-\chapter{Investigations for testnet deployment}
+\chapter{Investigations for local deployment}
 \label{chap:chapterfour}
 
-In order to deploy it locally, the first method that was tested was using the DFINITY SDK called \texttt{dfx}. The idea was to 
-investigate the possibility of checking whether it was possible to deploy the replicas using \texttt{dfx} on multiple nodes and 
-try to set up communication between them.
+In order to deploy it locally, the first method that was tested was using the DFINITY SDK called \texttt{dfx}. The idea was to investigate the possibility of checking whether it was possible to deploy the replicas using \texttt{dfx} on multiple nodes and try to set up communication between them.
 
-Hence, we started the local replica using \texttt{dfx} and then tried to set up the ledger canister on the local replica in 
-order to interact with the blockchain.
+Hence, we started the local replica using \texttt{dfx} and then tried to set up the ledger canister on the local replica in order to interact with the blockchain.
 
-Another essential thing to note about Internet Computer is that it doesn't ship with RPC endpoints for the blockchain. Hence 
-once we deploy the local ledger, to create transactions or perform any kind of operations on the blockchain, you have to deploy 
-Rosetta API on top of the replica set to interact with the blockchain in RPC-like format.
+Another essential thing to note about Internet Computer is that it doesn't ship with RPC endpoints for the blockchain. Hence once we deploy the local ledger, to create transactions or perform any kind of operations on the blockchain, you have to deploy Rosetta API on top of the replica set to interact with the blockchain in RPC-like format.
 
 \section{Local deployment with \texttt{dfx}}
 
 \section{Ledger canister}
 
-The Internet Computer Protocol (ICP) implements management of its utility token (ticker "ICP") using a specialized canister, 
-called the ledger canister. There is a single ledger canister which runs alongside other canisters on a special subnet of the 
-Internet Computer - the NNS subnet. The ledger canister is a smart contract that holds accounts and transactions. These 
-transactions either mint ICP tokens for accounts, transfer ICP tokens from one account to another, or burn ICP tokens, 
-eliminating them from existence, e.g. while converting ICP tokens to cycles. The ledger canister maintains a traceable history 
-of all transactions starting from its genesis state (initial state).
+The Internet Computer Protocol (ICP) implements management of its utility token (ticker "ICP") using a specialized canister, called the ledger canister. There is a single ledger canister which runs alongside other canisters on a special subnet of the Internet Computer - the NNS subnet. The ledger canister is a smart contract that holds accounts and transactions. These transactions either mint ICP tokens for accounts, transfer ICP tokens from one account to another, or burn ICP tokens, eliminating them from existence, e.g. while converting ICP tokens to cycles. The ledger canister maintains a traceable history of all transactions starting from its genesis state (initial state).
 
 \textbf{Local ledger setup:} You can follow the steps shown \href{https://internetcomputer.org/docs/current/developer-docs/integrations/ledger/ledger-local-setup}{here}.
 
-In order to further understand how their lPlease note that the LaTeX frmatting might need further adjustments based on your 
-document's style and formatting requirements.
-edger works, I run some of their test examples. One of the most important ones is the \href{https://github.com/dfinity/examples/tree/master/motoko/ledger-transfer}{ledger-transfer example}. It helps you create transactions, transfer ICP, etc. The source 
-code is added to \texttt{code/} folder. Once you run this example, you can run the Rosetta client on top of this, which will 
-provide you with RPC-like endpoints.
+In order to further understand how their ledger works, I run some of their test examples. One of the most important ones is the \href{https://github.com/dfinity/examples/tree/master/motoko/ledger-transfer}{ledger-transfer example}. It helps you create transactions, transfer ICP, etc. The source code is added to \texttt{code/} folder. Once you run this example, you can run the Rosetta client on top of this, which will provide you with RPC-like endpoints.
 
-To run the \texttt{ledger-canister example}, the easiest way is to ignore the steps in the readme provided in the repository and 
-just follow the step-by-step procedure in the \texttt{code/ledger-transfer/demo.sh} bash script file. Once you have successfully 
-deployed this, you can deploy the Rosetta API to get the API endpoints to interact with the ledger.
+To run the \texttt{ledger-canister example}, the easiest way is to ignore the steps in the readme provided in the repository and just follow the step-by-step procedure in the \texttt{code/ledger-transfer/demo.sh} bash script file. Once you have successfully deployed this, you can deploy the Rosetta API to get the API endpoints to interact with the ledger.
 
 \section{Rosetta}
 
-Rosetta is an open standard introduced by Coinbase to simplify the integration of blockchain-based tokens in exchanges, block 
-explorers, and wallets. You can set up a Rosetta API-compliant node to interact with the Internet Computer and exchange Internet 
-Computer Protocol (ICP) tokens.
+Rosetta is an open standard introduced by Coinbase to simplify the integration of blockchain-based tokens in exchanges, block explorers, and wallets. You can set up a Rosetta API-compliant node to interact with the Internet Computer and exchange Internet Computer Protocol (ICP) tokens.
 
 In order to deploy your own Rosetta client on top of the local ledger, you can follow the steps \href{https://internetcomputer.org/docs/current/developer-docs/integrations/rosetta/}{here}.
 
 \section{Limitations}
 
-Using this process, we were able to successfully deploy the replica node on one of our testbed machines. However, when we moved 
-to the next step, where we had to deploy it in multiple nodes and connect, we found that there was no functionality of this 
-available in \texttt{dfx}. It deploys only a single replica set, and there is no possible way to connect it with other local 
-deployments. Hence we reached a dead end for this stage.
-
-\section{Testnet Installation process}
-
-\subsection{icos\_deploy.sh}
-
-\begin{enumerate}
-    \item Uses the \texttt{inventory.py} to generate the dynamic mapping of nodes to their IPv6 addresses.
-    \item Creates USB sticks for IC Nodes.
-\end{enumerate}
-
-To interact with the NNS on <testnet>, on which the NNS canisters have already been deployed:
-\begin{itemize}
-    \item Add the \texttt{network} in \texttt{dfx.json}. Point at a machine from the NNS subnet from \texttt{env/<testnet>/
-    hosts}. It's already done for the NNS testnet.
-    \item Depending on the type of "network", \texttt{dfx} will expect the mapping between canister names and IDs to either be 
-    in \texttt{./canister\_ids.json} (the current directory must be the NNS dir) or \texttt{./.dfx/<networkname>/canister\_ids.
-    json}.
-    \item Add entries for each \texttt{canister} in \texttt{canister\_ids.json}: duplicate the existing one and just change the 
-    network name. The canister IDs are identical for all subnets.
-    \item For each canister, copy its \texttt{.did} file under 
-    \texttt{.dfx/<networkname>/canisters/<canister\_name>/  <canister\_name>.did}.
-    \item Creates USB sticks for boundary nodes.
-    \item Runs the \texttt{ic\_network\_redeploy} playbook with \texttt{ic\_state=create}.
-    \item This playbook gives the role of \texttt{ic\_guest}.
-\end{itemize}
-
-\subsection{ic\_guest}
-
-The \texttt{main.yml} file consists of the following tasks:
-
-\begin{itemize}
-    \item \texttt{prepare.yml}: It sets the output of the commands, creates some folders, and installs \texttt{GNU parallel} and 
-    \texttt{zstd}.
-    \item \texttt{disk\_pull.yml}: This task downloads disk images for different node types from a specified URL and unarchives 
-    them.
-    \item \texttt{disk\_push.yml}: This task archives the \texttt{disk.img} file into a \texttt{disk-img.tar.zst} file and 
-    synchronizes it to the remote host(s).
-    \item \texttt{aux\_disk\_push.yml}: This task performs the same operations as \texttt{disk\_push.yml}, but for the auxiliary 
-    disk.
-    \item \texttt{media\_pull.yml}: Debug message for CI/CD Pipelines.
-    \item \texttt{media\_push.yml}: This task copies the media image file (\texttt{media.img}) to the remote hosts.
-    \item \texttt{create.yml}: This task copies various files and prepares the guest template file, then defines and starts a guest virtual machine.
-\end{itemize}
-
-\subsection{icos\_network\_redeploy.yml}
-
-\begin{itemize}
-    \item This playbook is started with the \texttt{ic\_state=start} parameter and has the role of \texttt{ic\_guest}.
-    \item It starts the virtual machine guest and sets it to autostart using the \texttt{virsh} command.
-\end{itemize}
-
-\subsection{icos\_network\_redeploy.yml}
-
-\begin{itemize}
-    \item This playbook is started with the \texttt{ic\_state=install} parameter and has the role of \texttt{ic\_guest}.
-    \item It installs the NNS canisters and verifies the installation by checking the subnet.
-    \item The tasks are executed on the localhost using the \texttt{delegate\_to: localhost} directive.
-\end{itemize}
-
-\section{NNS Installation process}
-
-\subsection{Wait for replica to listen on all NNS nodes on port 8080}
-
-This task waits for the application to start listening on port 8080 for all nodes defined in the 'nns' group.
-
-\subsection{Check if the initial neuron config exists}
-
-This task checks if the \texttt{initial-neurons.csv} file exists.
-
-\subsection{Get Custom NNS canisters}
-
-This task copies the custom wasm file into the \texttt{canister} folder.
-
-\subsection{Install NNS Canisters}
-
-This task installs and verifies the installation of the NNS (Neuron Network Service) canisters using shell commands. It 
-initializes the NNS canisters on a subnet and checks the installation.
-
-The task is executed on the localhost.
-
-\section{IC-OS Installation process}
-
-\begin{enumerate}
-    \item Install \texttt{virsh}.
-    \item Install the required packages: \texttt{libvirt-daemon-system}, \texttt{libvirt-clients}, \texttt{bridge-utils}, \texttt
-    {virtinst}, and \texttt{virt-manager}.
-    \item Add the user to the \texttt{kvm} and \texttt{libvirt} groups.
-    \item Download the disk image and ISO image for the virtual machine.
-    \item Start the default network using \texttt{virsh net-start default}.
-    \item Start the virtual machine using the \texttt{virt-install} command with appropriate parameters.
-\end{enumerate}
-
-\section{Our findings}
-
-\textbf{Main entrypoint}
-
-The main entrypoint is the \texttt{testnet/tools/icos\_deploy.sh} script.
-
-\textbf{Steps:}
-
-1. \textbf{Pre-requisites:}
-    \begin{enumerate}
-        \item Install the required packages:
-        \texttt{apt -y install ansible coreutils jq mtools rclone tar util-linux unzip --no-install-recommends}
-        \item Install \texttt{mkfs}:
-        \texttt{apt-get install dosfstools}
-        \item Get the SHA of the disk image:
-        \texttt{./gitlab-ci/src/artifacts/newest\_sha\_with\_disk\_image.sh origin/master}
-        \item Start the deployment:
-        \texttt{./testnet/tools/icos\_deploy.sh <testnet> --git-revision d53b551dc677a82c8420a939b5fee2d38f6f1e8b}
-    \end{enumerate}
-
-2. \textbf{Installation process}
-    
-    \begin{enumerate}
-        \item \textbf{Displays local IPv4 and IPv6 address info}
-        \item \textbf{Destroy the previous deployments}
-        \item \textbf{Build USB sticks for IC nodes}
-        
-        This step downloads the canisters, release files, etc. Initially, it tries to get them from the S3 bucket, but then it 
-        falls back to other options such as using \texttt{rclone} to download from somewhere else.
-        
-        \item \textbf{Build USB sticks for boundary nodes}
-        
-        There seems to be an error related to undefined variables.
-        
-        \item \textbf{Run \texttt{icos\_redeploy.yml} with \texttt{create} state}
-        
-        This playbook is used to deploy the ICOS to the nodes. The inventory file (\texttt{inventory.py}) is used to manage the 
-        nodes and define the groups. The IPv6 addresses are assigned using the shared config and host names defined in \texttt
-        {hosts.ini}.
-        
-        \item \textbf{Run the playbook \texttt{icos\_network\_redeploy.yml}}
-        
-        However, there are difficulties in updating the IPs as they are generated dynamically, causing the playbook to crash 
-        when trying to SSH into the nodes.
-    \end{enumerate}
-
-
-\section{Inferences and Learnings}
-
-\begin{itemize}
-\item They directly initialize the NNS from the source code. From the source code, they get the WebAssembly (wasm) for the other 
-canister.
-\item There is a strong dependency on the IPV6 address in order to complete the installation.
-\item Boundary nodes use host- and guest-OS architecture, which is based on standard Ubuntu and often referred to as "IC-OS." 
-This is what is being pulled from their server and being installed and run on these nodes. This is something that we would need 
-to run on our nodes as well.
-\end{itemize}
+Using this process, we were able to successfully deploy the replica node on one of our testbed machines. However, when we moved to the next step, where we had to deploy it in multiple nodes and connect, we found that there was no functionality of this available in \texttt{dfx}. It deploys only a single replica set, and there is no possible way to connect it with other local deployments. Hence we reached a dead end for this stage.
