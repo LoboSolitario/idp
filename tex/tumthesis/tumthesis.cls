@@ -395,9 +395,9 @@
     \microtypesetup{expansion=false}%
     \begin{center}%
         \selectlanguage{ngerman}
-        {\huge\scshape\TUMname}\par
-        {\Large\scshape\chairname}\par
-        {\Large\scshape\departmentname}\par
+        {\huge\scshape\orgname}\par
+        {\Large\scshape\chair}\par
+        {\Large\scshape\school}\par
         \selectlanguage{english}
         \vspace{3\baselineskip}
         {\Large\thetitle}\par
@@ -407,7 +407,7 @@
     \vspace{3\baselineskip}
     \selectlanguage{ngerman}
     {\noindent\normalsize\sloppy
-    Voll\-st\"an\-diger Ab\-druck der von der \departmentname\ der
+    Voll\-st\"an\-diger Ab\-druck der von der \school\ der
     Tech\-nisch\-en Uni\-ver\-si\-t\"at M\"unchen zur Er\-lan\-gung des
     aka\-de\-misch\-en Gra\-des eines
     \begin{center}
@@ -435,7 +435,7 @@
     \linespread{1.9}\selectfont
     Die Dis\-ser\-ta\-ti\-on wur\-de am \thedate\ bei der
     Tech\-nisch\-en Uni\-ver\-si\-t\"at M\"unchen ein\-ge\-reicht und
-    durch die \departmentname\ am \theacceptancedate\
+    durch die \school\ am \theacceptancedate\
     an\-ge\-nom\-men.\par\normalsize\fussy
     }}
     \endgroup
@@ -450,8 +450,9 @@
             \TUMheader{1cm}
             \vspace*{6\baselineskip}
             \begin{center}%
-                {\huge\scshape\TUMname\par}
-                {\Large\scshape\departmentname\par}
+                {\huge\scshape\orgname\par}
+                {\Large\scshape\school\par}
+                {\Large\scshape\department\par}
                 \vspace{4\baselineskip}
                 {\Large\scshape\thethesistype{} in \thecourseofstudy\par}
                 \vspace{4\baselineskip}
@@ -471,8 +472,9 @@
             \microtypesetup{expansion=false}%
             \vspace*{\fill}
             \begin{center}%
-                {\huge\scshape\TUMname\par}
-                {\LARGE\scshape\departmentname\par}
+                {\huge\scshape\orgname\par}
+                {\Large\scshape\school\par}
+                {\Large\scshape\department\par}
                 \vspace{4\baselineskip}
                 {\Large\thethesistype{} in \thecourseofstudy\par}
                 \vspace{4\baselineskip}
