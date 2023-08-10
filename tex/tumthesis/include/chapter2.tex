@@ -2,66 +2,41 @@
 \label{chap:chaptertwo}
 
 
-With the growing adoption of blockchain technology, the number of readily-available solutions has multiplied dramatically. 
-Approximately five thousand distinct cryptocurrencies have been reported on a single website[1]. There are a growing 
-number of Layer-1 blockchains currently, and each of these implementations aims at offering improvements through distinctive features 
-focused on the performance and application to various use cases. The authors of different blockchain protocols claim impressive 
-performance. These results are usually obtained in isolation and are often non-reproducible, which makes them hard to compare and 
-verify. Hence it is crucial to run these experiments on a reproducible architecture in order to truly understand the performance.
+With the advancements in blockchain research, there are a staggeringly large number of blockchain applications that are available in the market. On coinmarketcap alone there are more than 6,000 different listed cryptocurrencies~\cite{coinmarketcap}, building on top of different layer 1 (L1) blockchain solutions. Each of these L1 implementations aims at offering improvements through distinctive features focused on the performance and application to various use cases in order to attract more developers and users on their platform. For instance,Ethereum, with its Turing-complete scripting language ~\cite{Buterin}, provides the capacity to develop complex decentralized applications. Algorand, on the other hand, presents a novel consensus algorithm - Pure Proof of Stake - and immediate transaction finality, improving efficiency and security ~\cite{Dimitri_2022}. The authors of different blockchain protocols release their performance metrics, and these metrics are usually difficult to reproduce because of the customized benchmarking setups ~\cite{PolygonWiki} ~\cite{AlgorandPerformance} and are often non-reproducible, making them difficult to compare with each other. The lack of reproducibility and verification of performance metrics poses a significant challenge to the objective comparison of different blockchain protocols. This issue often leads to discrepancies in results, reduces the trust in the ecosystem and ultimately hampers the adoption of blockchain technologies. Hence it is important to provide verifiable performance benchmarking in order to get a better comparison between the different available solutions.
 
-Blockchain technology, since its inception, has grown exponentially, with various chains being developed, each offering a unique 
-approach to consensus, security, and performance. Dfinity is particularly an intriguing case as it has a fundamentally very different 
-architecture from fundamental blockchains. The IC consists of a set of cryptographic protocols that connect independently operated 
-nodes into a collection of blockchains and hence allowing smart contracts to implement fully decentralized applications hosted 
-completely on the blockchain.
-
-\section{Problem Statement}
-
-Internet Computer (IC), developed by the Dfinity Foundation, with its goal of creating ``blockchain singularity", provides a unique 
-proposition in the expansive world of blockchain technology, making it interesting for developers and researchers. Dfinity 
-foundation, the core developers of IC, claim 250,000+ Ethereum equivalent transactions per second and 37.3 MB/s block throughput 
-capacity \cite{dfinitywebsite}, which is a game changer in the field. However, there is no clarity/reproducability for the 
-benchmarked data. There is no way to understand the conditions under which these benchmarking was done. Therefore, for this project, 
-we focus on an in-depth exploration and analysis of the Internet Computer blockchain from the perspective of benchmarking it.
+Out of all the L1’s, our attention is drawn to a distinctive player, the Internet Computer (IC) ~\cite{InternetComputerRSS}. IC, developed by Dfinity Foundation, is a unique L1 solution with an architecture different from fundamental blockchains like Ethereum. For decentralised applications (Dapps) built on ethereum or other similar L1s, although the smart contracts are deployed on-chain, the rest of the frontend is hosted on traditional cloud platforms (which are still centralised) and call out to smart contracts on a blockchain for a small part of their overall functionality. However, IC is designed to act as a complete technology stack, such that decentralised applications can be built and run directly on the IC ~\cite{DfinityWhitepaper}. They achieve this by designing their infrastructure in a way that they can host both the frontend and the backend functionality in smart contracts (called ~\emph{canisters} ~\cite{dfinityCanisters}) on the IC which can service HTTP requests created by end users, and hence directly serving interactive web services. While doing so, they are able to provide performance comparable to traditional webservices ~\cite{webspeed}. This unique proposition makes it worthwhile to explore the architecture of IC and to understand the performance of the system. Therefore, for this Inter-disciplinary project, we focus on an in-depth review of IC from the perspective of benchmarking it in a verifiable and reproducable manner.
 
 \section{Goals and Research Questions}
 
-Based on the problem statement, we define two research goals and the questions that help us to achieve the goals
+For this Inter disciplinary Project, we define the research goals and the questions that help us to achieve the goals
 
-\textbf{Goal 1:}  In-depth exploration and analysis of the Internet Computer blockchain in order to run a local testnet.
+\textbf{Goal:}  In-depth exploration and analysis of IC by deploying a local testnet and benchmarking using Diablo (later updated to Engine).
 
-\textbf{Question 1:} How does the Internet Computer blockchain differ from other blockchain models in terms of architecture and 
-functionality?
+\textbf{Question 1:} How does IC differ from other blockchain models in terms of architecture and functionality?
 
 \textbf{Question 2:} How can the \textbf{`dfx'} SDK from Dfinity be used to set up and manage replicas on a local nodes and can we 
 enable communication between multi-node setup?
 
-\textbf{Question 3:} What are the specific requirements to set up a local Internet Computer blockchain testnet?
+\textbf{Question 3:} What are the specific requirements to set up a local IC testnet?
 
-\textbf{Goal 2:} Explore the benchmarking possibilities, experiment types, and performance evaluations within a single \textbf{`dfx'} 
-environment, on the mainnet, and by connecting a local node from a testbed to the mainnet.
+\textbf{Question 4:} How to conduct the benchmarking and understand what kind experiment types, and performance evaluations can be done within a single \textbf{`dfx'} environment, on the mainnet, and by connecting a local node from a testbed to the mainnet?
 
-\textbf{Question 1:} what can be benchmarked using a single dfx environment?
 
-\textbf{Question 2:} What types of experiments can we do directly on the mainnet?
-
-\textbf{Question 3:} If we can run a node on our current testbed and connect it to the mainnet, what benchmarking can be performed?
 
 \section{Methodology and Structure}
 
 To understand IC performance, we aimed to deploy it on our local testbed and conduct a series of benchmarking experiments. First, we 
 looked into `dfx', the IC SDK, in order to set up local replicas in multiple nodes and enable communication between them. Secondly, 
-we wanted to have a complete local testnet setup. However, unlike other layer 1 solutions, Dfinity does not readily support local 
+we wanted to have a complete local testnet setup. However, unlike other L1 solutions, Dfinity does not readily support local 
 testnet setups, creating an initial roadblock for our research.
 
 Therefore, the first portion of our project pivoted towards understanding Dfinity's complex infrastructure in its entirety. This 
 necessitated a deep dive into its technical architecture and learning the intricacies of the process required to install a local 
 version of the Dfinity testnet.
 
-Following this, our objective has been to leverage the insights gained from this initial research to deploy the Dfinity blockchain 
+Following this, our objective has been to understand the insights gained from this initial research to deploy the Dfinity blockchain 
 locally and subsequently understand how to execute benchmarking experiments (i.e. figuring out the workloads, understanding the 
 important metrics etc).
 
 This report details our understanding of the Dfinity blockchain, the challenges we faced and overcame in deploying a local testnet, 
-and what are the future possibilities. Our findings will offer valuable insights into the performance of the Dfinity blockchain and 
-further contribute to the body of knowledge in this rapidly evolving field.
+and what are the future possibilities. 
