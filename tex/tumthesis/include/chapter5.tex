@@ -1,2 +1,239 @@
-\chapter{Investigations for Mainnet and DFX benchmarking}
-\label{chap:chaptersix}
+\chapter{Investigations for cycle costs}
+\label{chap:chapterfive}
+
+This section of our investigation focuses on the approach we adopted to understand the cycle costs associated with operations inside canisters on IC. Our primary objective is to understand how IC charges cycles for canister deployment, execution, and storage. Subsequently, the study delves into understanding computational expenses incurred by various opcodes within the canister environment under different optimizations. This provides a granular analysis of how these costs translate into IC cycle charges.
+
+IC uses a cycle cost model, which functions analogously to gas on Ethereum but with significant structural differences. Unlike Ethereum, where users incur gas costs for transactions, the IC employs a ‘Reverse gas model’ (as explained in Section 5.1) where developers pre-fund their canisters with cycles. These cycles represent a quantifiable measure of computational effort and are consumed during canister operations to cover computational costs, storage, and network activities. This work aims to delineate the specific cycle costs associated with various wasm instructions executed.
+
+Furthermore, we also investigate the impact of code optimizations on cycle cost. IC utilizes ‘wasm-opt’ ~\cite{WebAssemblyBinaryen}, a web assembly tool that optimizes the wasm code by removing redundancies, reorganizing execution flows, and precompiling elements. These optimizations can potentially alter the cycle costs associated with various operations.
+
+
+
+
+
+
+
+
+
+\section{IC Cycles Cost Model}
+
+The IC uses a different mechanism for managing transaction costs within its ecosystem, notably diverging from the conventional gas models utilized by other Layer 1s (like Ethereum or Solana).
+
+In IC, instead of charging transaction fees to the user, it charges the fee to the canister smart contract. This fee model is called the ‘Reverse gas model’~\cite{ICPReverseGas}. This relieves the user from signing and approving every transaction they perform.    
+
+In this model, cycles are consumed by the canister in the following ways:
+\begin{enumerate}
+    \item Executing messages in the canister.
+    \item Sending messages to other canisters.
+    \item Storing data over time in the canister.
+\end{enumerate}
+
+Each of the above spending occurs in three phases:
+\begin{enumerate}
+    \item Reserving maximum cycles, denoted as \texttt{cycles\_reserved}, for the specific operation being executed.
+    \item Executing the operation and returning \texttt{cycles\_spent}.
+    \item Reimbursing the canister based on the \texttt{cycles\_spent} and \texttt{cycles\_reserved}.
+\end{enumerate}
+
+Additionally, the costs are linearly scaled based on the replication factor, i.e. the higher the nodes in a subnet where the canister is deployed, the higher the cost of execution. In our experiments, we deploy the canisters to a local development environment, i.e. the canister is deployed to a single node. Cycles charged to locally deployed canisters have a cost that is 1/13th the cost when deployed to a 13-node subnet. Also, there are no costs associated with execution in the system subnet.
+
+To understand how the cycle costs are calculated for operations, we conducted an exploration of the IC code base. The cycle cost for a canister is calculated using the formula ~\ref{eq:scaleCost}.
+
+
+\begin{align}
+    \text{scale\_cost}(&\text{config.update\_message\_execution\_fee} \nonumber \\
+    &+ \text{convert\_instructions\_to\_cycles}(\text{num\_instructions}), \text{subnet\_size})
+    \label{eq:scaleCost}
+\end{align}
+
+
+The computation of costs within the Internet Computer (IC) framework involves several key components:
+
+\begin{itemize}
+    \item \textbf{Fixed Fee for Message Execution:}
+    The fixed fee to start executing a message is {update\_message\_execution\_fee}. This is set to be 590,000 for the application subnet and 0 in system subnet(as of writing this report)~\cite{feeStructure}.
+    \item \textbf{Dynamic Fee Calculation:} The cycle cost is determined by the number of instructions returned by the function \texttt{convert\_instructions\_to\_cycles()}. This calculation is represented by equation ~\ref{eq:cycleCost}.
+    \begin{equation}
+        C = \frac{W}{10} \times \frac{4}{13}
+        \label{eq:cycleCost}
+        \end{equation}
+    where:
+    \begin{itemize}
+        \item $C$ represents the cycle cost for a given number of WASM instructions.
+        \item $W$ denotes the number of WASM instructions.
+    \end{itemize}
+    \item \textbf{Scaling of Costs:} The calculated cycle cost is then scaled according to the number of nodes in the subnet.
+\end{itemize}
+
+    
+
+
+
+
+
+
+\section{Optimizations}
+
+This subsection explores the different types and levels of optimizations available for WebAssembly code within the IC, facilitated by \texttt{wasm-opt}, an open-source tool from the Binaryen toolkit~\cite{WebAssemblyBinaryen}. This tool is integrated through \texttt{ic-wasm}~\cite{icwasm}, which adapts \texttt{wasm-opt} to ensure compatibility with IC canisters. It provides tailored optimization configurations that can be activated via the \texttt{dfx.json} configuration file.
+
+Optimizations on wasm are designed to reduce the binary size for the canisters or the cycles used for the canisters. Dfinity developers claim that these optimizations can improve cycle usage for Motoko canisters by around 10\%~\cite{optimization}. For our experiments, we want to understand the effects of this optimization on a granular level.
+
+Two further types of binary size reduction optimization levels exist: Oz and Os. Oz corresponds to the 'size' optimization setting, focusing on minimizing the binary footprint of the canister.
+
+For cycle usage, there are five levels, starting from O0 (No optimizations) to O4 (the highest level of optimization). However, through benchmarking ~\cite{canisterOptimisingBenchmarking}, the Dfinity team found that level O3 outperforms level O4, most likely due to the fact that \texttt{wasm-opt} is optimizing for bare-metal execution while performance on IC is calculated based on the number of instructions executed. Hence, they use O3 optimization as their 'cycles' optimization setting.
+
+For the experiments, 'size' optimization, 'cycles' optimization, and no optimization settings are used to compare the effects of optimizations to the cycle cost for execution of the opcodes.
+
+
+
+
+
+
+
+
+
+\section{Experiment Design and Implementation}
+
+Building upon the foundational understanding of the IC’s cycle cost model, we wanted to understand the costs associated with executing different opcodes. Since the cycle cost for a specific opcode is directly related to the underlying instruction count required to execute that opcode, we set up an experiment to profile a broad spectrum of canister opcodes to accurately determine their cycle cost implications.
+
+
+\subsection{Methodology Overview}
+To achieve our objectives, we desgin a comprehensive experiment that involved the following key components:
+
+\begin{enumerate}
+    \item \textbf{Tool Support and Extension}:
+    
+    Initially, we evaluate existing tools for profiling canister operations, identifying gaps in their capabilities~\cite{canisterProfiling}. 
+    
+    First, since any canister code (written in Rust or Motoko) is first translated to wasm, we attempt to profile the isolated wasm files using the wasm profiler~\cite{wasmProfiling}. However, we found that IC uses \texttt{ic-wasm} to build the wasm file. It is a customized wasm library used to deploy canisters as wasm files on IC. These files can only be run and profiled in an IC environment. Hence, isolating these wasm files and performing granular profiling was not possible.
+    
+    Secondly, we explore the \texttt{canister-profiling} tool~\cite{canisterProfiling}~\cite{canisterProfiling}, developed and open-sourced by Dfinity, in which a canister can be instrumented to report the full execution trace, including the instruction costs and refmemory usage. However, this tool only provides a high-level overview of the execution trace and does not provide granular profiling of individual opcodes.
+    
+    For our experiments, we extend the \texttt{canister-profiling} tool for granular profiling of IC cycle usage for a wide range of opcodes.
+    
+    \item \textbf{Opcode Categorization}: We categorize canister opcodes based on their functional and computational requirements into three distinct groups described in detail in Section ~\ref{sec:OpcodeCategories}. This categorization allowed for a granular analysis of cycle costs, facilitating comparisons within and across categories.
+    
+    \item \textbf{Test Environment}: We established a controlled test environment using \texttt{dfx} on a local machine for the test. This sets up a single-node subnet. For invoking specific opcodes, Motoko methods were implemented as described in detail in  ~\ref{sec:TestSetup}. This setup ensured that our cycle cost measurements would be as realistic and applicable as possible to real-world canister deployments.
+    
+    \item \textbf{Data Collection and Analysis}: We collected data on instruction counts and cycle costs in both optimized and general setups (explained in detail in Section ~\ref{sec:Evaluation}).
+\end{enumerate}
+
+
+\subsection{Test Setup}
+\label{sec:TestSetup}
+
+To facilitate our examination of cycle costs across different opcode categories within canisters on the IC, we set up a test environment, extended the tool for canister-profiling, implemented motoko code for triggering specific opcodes, ran various optimizations, and collected and compared the results. Utilizing dfx, we configured a local development environment that emulates a single-node subnet setup. This approach provides an isolated context for our experiments, ensuring the accuracy and relevance of the measurements.
+
+Given the IC’s cost model, which linearly scales execution costs based on the number of nodes in the subnet, our single-node setup serves as a foundational baseline. From this, we can extrapolate the cycle costs associated with various subnet configurations by applying the scaling factor inherent to the model. This method estimates execution costs in more complex, multi-node subnet environments (13 or 34 node subnets).
+
+To conduct a granular and precise evaluation of opcode-related cycle consumption, we extended the canister-profiling repository from Dfinity[ref]. This extension involved the development of a new experiment designed for isolated testing of multiple opcodes. A minimalistic approach was used to implement the methods in Motoko to trigger different opcodes, such as b\_add for addition or b\_sub for subtraction, facilitating a direct evaluation of the opcode’s computational cost. A detailed explanation of the opcodes examined and their categories can be found in Section ~\ref{sec:OpcodeCategories}.
+
+To ensure that our analysis accurately reflects differences attributable solely to the opcode execution and not to variances in method structure or additional computational overhead, all methods were implemented following a uniform design. This methodological consistency allows for a precise comparative analysis across different opcodes under identical operational conditions.
+For instance, the method for the arithmetic opcodes (addition and subtraction) is implemented as shown in Listings ~\ref{lst:addFunc} and ~\ref{lst:subtractFunc} respectively.
+
+\begin{lstlisting}[caption={Function to add two numbers}, label={lst:addFunc}]
+    public func profileAdd() : async Nat {
+      return 2+1;
+    };
+  \end{lstlisting}
+  
+  \begin{lstlisting}[caption={Function to subtract two numbers}, label={lst:subtractFunc}]
+    public func profileSubstract() : async Nat {
+      return 2-1;
+    };
+  \end{lstlisting}
+
+All the methods are implemented under a single canister, called \texttt{opcode}, to keep a consistent environment. After the deployment of the opcode canister, ic-wasm is used to instrument the canister method to emit an execution trace. \texttt{\_\_get\_cycles: () -> (int64)} query as the name suggests, returns the current cycle counter. Then ic-repl~\cite{icrepl} is used to generate flamegraph for the last update call. 
+
+\begin{lstlisting}[caption={Function Call and Data Handling}, label={lst:functionCallData}]
+    call opcode.__get_cycles();
+    let caller = call opcode.profileAdd();
+    call opcode.__get_cycles();
+    
+    flamegraph(opcode, "Profile_ADD_Opcode", "mo_profileAdd.svg");
+    output(file, stringify("|Motoko|", opcode_wasm.size(), 
+        "|[", __cost_caller, "](mo_profileAdd.svg)|\n"));
+\end{lstlisting}
+    
+
+\subsection{Opcode Categories}
+\label{sec:OpcodeCategories}
+During our investigation into cycle costs associated with canister operations on the IC, we classified Opcode instructions into three primary categories: arithmetic, relational, and bitwise. This categorization was informed by the operational characteristics of each wasm Opcode and their expected impact on cycle consumption.
+
+Since the canister smart contract is translated to wasm in IC, the underlying opcodes at the end of the translations are the wasm opcodes~\cite{wasm-ops}. All of the cryptographic functions are either implemented on the protocol level~\cite{Chain-key-cryptographys} or implemented as an external Motoko library (like SHA256~\cite{sha256}), and hence we don’t include any separate category for that. Table ~\ref{tab:opcodeCategories} shows the overview of each category, describes the types of operations encompassed within these categories, and the opcodes under these classes.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|p{0.3\textwidth}|p{0.4\textwidth}|}
+\hline
+\textbf{Class} & \textbf{Description} & \textbf{Opcodes} \\
+\hline
+Arithmetic & Includes operations for performing basic mathematical computations. & \texttt{b\_add} (addition), \texttt{b\_sub} (subtraction), \texttt{b\_mul} (multiplication), \texttt{b\_div}(division), \texttt{b\_rem} (modulo), \texttt{b\_pow} (exponential) \\
+\hline
+Relational & Encompasses opcodes for comparing values to facilitate control flow and conditional execution. & \texttt{b\_eq} (equal), \texttt{b\_lt} (less than), \texttt{b\_ge} (great than or equal), \texttt{b\_le} (less than or equal), \texttt{b\_gt} (greater than) \\
+\hline
+Bitwise & Comprises operations that manipulate data at the bit level for efficient data processing. & \texttt{i64.and} (bitwise and), \texttt{i64.or} (bitwise or), \texttt{i64.xor} (bitwise xor), \texttt{i64.shl} (shift left), \texttt{i64.shr\_u} (shift right), \texttt{i64.rotl} (rotate left), \texttt{i64.rotr} (rotate right), \texttt{i64.add} (bitwise add), \texttt{i64.sub} (bitwise subtract) \\
+\hline
+\end{tabular}
+\caption{Overview of Opcode categories and their respective operations}
+\label{tab:opcodeCategories}
+\end{table}
+
+This categorization not only aids in the structured analysis of cycle costs but also in understanding the computational complexity and resource utilization patterns of different types of operations.
+
+
+
+
+\section{Evaluation}
+\label{sec:Evaluation}
+In this investigation phase, we evaluated the cycle costs of executing various opcodes within the  IC environment. The analysis was grounded in the data collected from our controlled test environment. Below, we detail the outcomes of our evaluation across three primary dimensions: cycle cost per opcode, instruction count per method, and the cycle cost for storage. Finally, we discuss the challenges encountered during the investigation.
+
+\subsection{Cycles Cost Per Opcode }
+Table x.x provides the data collected from our experiment. Our findings are categorized by opcode type —arithmetic, relational, and bitwise—each with associated cycle costs when executed in a 13-node subnet context. The dataset columns represent the Opcode name, the corresponding function in Motoko, the Opcode category, the count of wasm instructions, and the cycle costs for various optimization levels.
+
+The absence of wasm instruction counts in several entries post-optimization suggests that certain OpCode implementations may be optimized out or replaced with more efficient constructs.
+
+
+\begin{table}[ht]
+    \centering
+    \caption{Profiled Operations and Their Cycle Costs}
+    \label{tab:operation_cycles}
+    \begin{tabular}{|p{0.25\textwidth}|l|l|c|c|c|c|c|}
+        \hline
+    \textbf{Function} & \textbf{Opcode} & \textbf{Category} & \textbf{C1} & \textbf{C2} & \textbf{C3} & \textbf{C4} & \textbf{Cost(cycles)} \\
+    \hline
+    Add & b\_add & Arithmetic & 24 & 24 & 24 & 24 & 9.6 \\
+    Substract & b\_sub & Arithmetic & 30 & 30 & 30 & 32 & 12.8 \\
+    Multiply & b\_mul & Arithmetic & 26 & 26 & 26 & 27 & 10.8 \\
+    Divide & b\_div & Arithmetic & 26 & 26 & 26 & 27 & 10.8 \\
+    Modulo & b\_rem & Arithmetic & 26 & 26 & 26 & 25 & 10.0 \\
+    Exponention & b\_pow & Arithmetic & & & & 76 & 30.4 \\
+    Equal & b\_eq & Relational & 5 & 5 & 5 & 5 & 2 \\
+    NotEqual & b\_eq & Relational & 10 & 10 & 10 & 10 & 4 \\
+    LessThan & b\_lt & Relational & 10 & 10 & 10 & 10 & 4 \\
+    GreaterThanOrEqual & b\_ge & Relational & & & & 10 & 4 \\
+    LessThanOrEqual & b\_le & Relational & & & & 10 & 4 \\
+    GreaterThan & b\_gt & Relational & & & & 10 & 4 \\
+    BitwiseAnd & i.64.and & Bitwise & & & & 1 & 0.4 \\
+    BitwiseOr & i64.or & Bitwise & & & & 1 & 0.4 \\
+    ExclusiveOr & i64.xor & Bitwise & & & & 1 & 0.4 \\
+    ShiftLeft & i64.shl & Bitwise & & & & 1 & 0.4 \\
+    ShiftRight & i64.shr\_u & Bitwise & & & & 1 & 0.4 \\
+    RotateLeft & i64.rotl & Bitwise & & & & 1 & 0.4 \\
+    RotateRight & i64.rotr & Bitwise & & & & 1 & 0.4 \\
+    AddWrap & i64.add & Bitwise & & & & 1 & 0.4 \\
+    SubWrap & i64.sub & Bitwise & & & & 1 & 0.4 \\
+    \hline
+    \end{tabular}
+    \end{table}
+ 
+\subsection{Instruction Count Per Method}
+
+\subsection{Cycle Cost For Storage}
+
+\subsection{Challenges}
+
+During the investigations, granular analysis of opcode instruction counts under cycles or size optimization was not possible. The application of wasm-opt, complicates the calculation of instruction count for individual opcodes as this tool performs several optimizations, including precompilation, deduplication, and strategic code reorganization, which, although advantageous for runtime efficiency, significantly obfuscates the clarity of opcode-to-instruction count mappings. This effect is explicitly highlighted for bitwise and certain relational operators, for which specific cycle cost determinations remained unknown.
+Moreover, calculating CPU cycles associated with opcode execution confronted some challenges. The current state of analytical tools and methodologies extends beyond the accurate measurement of CPU cycles for executing wasm instructions within the IC ecosystem. The absence of a precise mechanism for gauging CPU cycle consumption for wasm instructions underscores a critical area for future research and development.
+
+The application of wasm-opt, complicates the calculation of instruction count for individual opcodes as this tool performs several optimizations, including precompilation, deduplication, and strategic code reorganization, which, albeit advantageous for runtime efficiency, significantly obfuscates the clarity of opcode-to-instruction count mappings. This effect is especially pronounced among bitwise and certain relational operators, for which specific cycle cost determinations remained unknown. Moreover, calculating CPU cycles associated with opcode execution confronted some challenges. The current state of analytical tools and methodologies does not extend to the accurate measurement of CPU cycles for executing wasm instructions within the IC ecosystem. The absence of a precise mechanism for gauging CPU cycle consumption for wasm instructions underscores a critical area for future research and development.

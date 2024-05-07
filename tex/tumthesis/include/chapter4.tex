@@ -1,5 +1,5 @@
 \chapter{Investigations for testnet deployment}
-\label{chap:chapterfive}
+\label{chap:chapterfour}
 
 \section{Testnet Installation process}
 
@@ -107,7 +107,6 @@ The main entrypoint is the \texttt{testnet/tools/icos\_deploy.sh} script.
         \item Install \texttt{mkfs}:
         \texttt{apt-get install dosfstools}
         \item Get the SHA of the disk image:
-        \texttt{./gitlab-ci/src/artifacts/newest\_sha\_with\_disk\_image.sh origin/master}
         \item Start the deployment:
         \texttt{./testnet/tools/icos\_deploy.sh <testnet> --git-revision d53b551dc677a82c8420a939b5fee2d38f6f1e8b}
     \end{enumerate}
